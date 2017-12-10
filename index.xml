@@ -1,34 +1,62 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<?xml-stylesheet type="text/xsl" href="simple.xsl" ?>
-<breakfast_menu>
-  <food>
-    <name>Belgian Waffles</name>
-    <price>$500.95</price>
-    <description>Two of our famous Belgian Waffles with plenty of real maple syrup</description>
-    <calories>650</calories>
-  </food>
-  <food>
-    <name>Strawberry Belgian Waffles</name>
-    <price>$700.95</price>
-    <description>Light Belgian waffles covered with strawberries and whipped cream</description>
-    <calories>900</calories>
-  </food>
-  <food>
-    <name>Berry-Berry Belgian Waffles</name>
-    <price>$8.95</price>
-    <description>Light Belgian waffles covered with an assortment of fresh berries and whipped cream</description>
-    <calories>900</calories>
-  </food>
-  <food>
-    <name>French Toast</name>
-    <price>$4.50</price>
-    <description>Thick slices made from our homemade sourdough bread</description>
-    <calories>600</calories>
-  </food>
-  <food>
-    <name>Homestyle Breakfast</name>
-    <price>$6.95</price>
-    <description>Two eggs, bacon or sausage, toast, and our ever-popular hash browns</description>
-    <calories>950</calories>
-  </food>
-</breakfast_menu>
+
+<xsl:stylesheet version="1.0" 	 				    			     			xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+   xmlns:xs="http://www.w3.org/2001/XMLSchema"
+   xmlns:csv="http://example.com/csv"
+   exclude-result-prefixes="xs csv"
+   version="3.0">
+
+   <xsl:output indent="yes"/>
+
+   <xsl:use-package name="http://example.com/csv-parser" 
+                    package-version="*">
+       <xsl:override>
+           <!-- Change the root element from 'csv' to 'root' -->
+           <xsl:template match="csv" mode="csv:post-process">
+               <root>
+                   <xsl:apply-templates mode="csv:post-process"/>
+               </root>
+           </xsl:template>
+
+           <!-- add an extra attribute that uses the context item -->
+           <xsl:attribute-set name="csv:field-attributes" 
+                              use-attribute-sets="xsl:original">
+               <xsl:attribute name="type" 
+                              select="if (. castable as xs:decimal) 
+                                      then 'numeric' 
+                                      else 'string'"/>
+           </xsl:attribute-set>          
+
+           <!-- use semicolon not comma between fields -->
+           <xsl:variable name="csv:field-separator" 
+                         as="xs:string" select="';'" 
+                         visibility="public"/>
+
+           <!-- prevent empty rows from appearing with empty lines -->
+           <xsl:function name="csv:preprocess-line" 
+                         as="xs:string?" 
+                         visibility="public">
+               <xsl:param name="line" as="xs:string"/>
+               <xsl:variable name="norm-line" 
+                             select="normalize-space(xsl:original($line))"/>
+               <xsl:sequence select="if (string-length($norm-line) > 0) 
+                                     then $norm-line 
+                                     else ()"/>
+           </xsl:function>
+       </xsl:override>
+   </xsl:use-package>
+
+   <!-- example input "file"  -->
+   <xsl:variable name="input" as="xs:string">
+       name;id;postal code
+  
+       "Braaksma Abel";34291;1210 KA
+       "Berglund Anders";473892;9843 ZD
+   </xsl:variable>
+
+   <!-- entry point -->
+   <xsl:template name="xsl:initial-template">
+       <xsl:copy-of select="csv:parse($input)"/>
+   </xsl:template>
+
+</xsl:stylesheet>
