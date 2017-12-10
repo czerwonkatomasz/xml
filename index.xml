@@ -1,6 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
-
-<xsl:stylesheet version="1.0" 	 				    			     			xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
    xmlns:xs="http://www.w3.org/2001/XMLSchema"
    xmlns:csv="http://example.com/csv"
    exclude-result-prefixes="xs csv"
@@ -49,7 +47,6 @@
    <!-- example input "file"  -->
    <xsl:variable name="input" as="xs:string">
        name;id;postal code
-  
        "Braaksma Abel";34291;1210 KA
        "Berglund Anders";473892;9843 ZD
    </xsl:variable>
